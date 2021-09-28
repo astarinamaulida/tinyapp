@@ -13,7 +13,7 @@ function generateRandomString() {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
-};
+}
 
 const urlDatabase = {};
 
@@ -37,19 +37,19 @@ app.post("/urls", (req, res) => {
   urlDatabase[randomShort] = {
     shortURL: randomShort,
     longURL: req.body.longURL
-  }
+  };
   res.redirect(`/urls/${randomShort}`);
 });
 
 //server generates a shortURL adds it to urlDatabase
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-  let templateVars =
+    let templateVars =
   {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL
   };
-  res.render("urls_show", templateVars);
+    res.render("urls_show", templateVars);
   }
 });
 
