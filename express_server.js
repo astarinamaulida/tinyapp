@@ -1,10 +1,13 @@
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const urlDatabase = {};
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+app.use(cookieParser());
 
 function generateRandomString() {
   let result = '';
@@ -15,22 +18,48 @@ function generateRandomString() {
   return result;
 }
 
-const urlDatabase = {};
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// START
+////////// GET REQUEST ///////////
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { 
+    username: req.cookies["username"],
+    urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { 
+    username: req.cookies["username"]};
+  res.render("urls_new", templateVars);
 });
+
+//server generates a shortURL adds it to urlDatabase
+app.get("/urls/:shortURL", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    let templateVars =
+  {
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL
+  };
+    res.render("urls_show", templateVars);
+  }
+});
+
+//redirect to longURL
+app.get("/u/:shortURL", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    const fullURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(fullURL);
+  }
+});
+
+
+////////// POST REQUEST //////////
 
 app.post("/urls", (req, res) => {
   const randomShort = generateRandomString();
@@ -41,16 +70,9 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomShort}`);
 });
 
-//server generates a shortURL adds it to urlDatabase
-app.get("/urls/:shortURL", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    let templateVars =
-  {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL
-  };
-    res.render("urls_show", templateVars);
-  }
+app.post("/login", (req, res) => {
+  res.cookie("username");
+  res.redirect('/urls');
 });
 
 //delete button function
@@ -61,12 +83,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls")
 });
 
-//redirect to longURL
-app.get("/u/:shortURL", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    const fullURL = urlDatabase[req.params.shortURL].longURL;
-    res.redirect(fullURL);
-  }
+app.post("/logout", (req, res) => {
+  res.clearCookie("username", req.body.username);
+  res.redirect('/urls');
 });
 
 app.post("/urls/:id", (req, res) => {
