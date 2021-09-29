@@ -55,7 +55,9 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //delete button function
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params];
+  if (urlDatabase[req.params.shortURL]) {
+  delete urlDatabase[req.params.shortURL];
+  };
   res.redirect("/urls")
 });
 
@@ -65,4 +67,10 @@ app.get("/u/:shortURL", (req, res) => {
     const fullURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(fullURL);
   }
+});
+
+app.post("/urls/:id", (req, res) => {
+  const shortURL = req.params.id;
+    urlDatabase[shortURL].longURL = req.body.newURL;
+    res.redirect('/urls');
 });
