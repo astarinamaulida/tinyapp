@@ -21,13 +21,12 @@
       <div class="card text-center">
         <div class="card-header"></div>
         <div class="card-body">
-          <h5 class="card-title"> Edit
-          </h5>
+          <h5 class="card-title"> Edit</h5>
           <p class="card-text">
-          <form action="/urls/<% shortURL %>" method="POST">
-            <label for="newURL">New URL:</label>
-            <input type="text" name="newURL" placeholder="http://" style="width: 300px; margin: 1em">
-            <button type="submit" class="btn btn-primary">Update</button>
+          <form action="/urls/<%= shortURL %>" method="POST">
+            <label for="longURL">New URL:</label>
+            <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
+            <button type="submit" class="btn btn-info">Update</button>
           </form>
           </a></p>
         </div>
