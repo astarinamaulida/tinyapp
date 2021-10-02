@@ -32,5 +32,5 @@ Very simple, user friendly, fast, and easy to navigate.
 
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command.
-- Browse to http://localhost:8000/
+- Browse to http://localhost:8080/
 - Enjoy the fun!
