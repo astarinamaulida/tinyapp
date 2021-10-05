@@ -4,20 +4,7 @@ const cookieSession = require('cookie-session');
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const { urlDatabase, getUserByEmail, generateRandomString, addNewUser, urlsForUser } = require("./helpers");
-
-const userDb = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-};
+const { userDb, urlDatabase, getUserByEmail, generateRandomString, addNewUser, urlsForUser } = require("./helpers");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");

@@ -28,7 +28,6 @@ const urlDatabase = {
 const getUserByEmail = function(email, users) {
   for (const userID in users) {
     const user = users[userID];
-    console.log(email, user);
     if (email === user.email) {
       return user;
     }
@@ -68,7 +67,6 @@ const urlsForUser = function(id) {
     if (url.userID === id) {
       filterId[shortURL] = url;
     }
-    console.log('id:',id);
   }
   return filterId;
 };
