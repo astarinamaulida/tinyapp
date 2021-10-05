@@ -1,16 +1,5 @@
 const bcrypt = require('bcrypt');
 
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW"
-  }
-};
-
 const userDb = {
   "userRandomID": {
     id: "userRandomID",
@@ -24,9 +13,22 @@ const userDb = {
   }
 };
 
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  }
+};
+
+// To check if there is user with this email
 const getUserByEmail = function(email, users) {
-  for (let userID in users) {
+  for (const userID in users) {
     const user = users[userID];
+    console.log(email, user);
     if (email === user.email) {
       return user;
     }
@@ -34,6 +36,7 @@ const getUserByEmail = function(email, users) {
   return undefined;
 };
 
+// Create random combination for userID and shortURL
 const generateRandomString = function() {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -43,6 +46,7 @@ const generateRandomString = function() {
   return result;
 };
 
+// To add new user
 const addNewUser = function(email, password, users) {
   const hashPassword = bcrypt.hashSync(password, 10);
   let userID = generateRandomString();
@@ -54,6 +58,7 @@ const addNewUser = function(email, password, users) {
   return userID;
 };
 
+// To filter the urls by certain user
 const urlsForUser = function(id) {
   const filterId = {};
   const keys = Object.keys(urlDatabase);
@@ -63,8 +68,9 @@ const urlsForUser = function(id) {
     if (url.userID === id) {
       filterId[shortURL] = url;
     }
+    console.log('id:',id);
   }
   return filterId;
 };
 
-module.exports = { urlDatabase, userDb, getUserByEmail, generateRandomString, addNewUser, urlsForUser };
+module.exports = { userDb, urlDatabase, getUserByEmail, generateRandomString, addNewUser, urlsForUser };

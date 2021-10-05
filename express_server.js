@@ -1,31 +1,37 @@
 const bcrypt = require('bcrypt');
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
-const e = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const { urlDatabase, userDb, getUserByEmail, generateRandomString, addNewUser, urlsForUser } = require("./helpers");
+const { urlDatabase, getUserByEmail, generateRandomString, addNewUser, urlsForUser } = require("./helpers");
+
+const userDb = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['ASTARINA'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 
 /////////////// / ///////////////
 
 app.get("/", (req, res) => {
-  if (req.session.user_id) {
+  if (req.session["user_id"]) {
     return res.redirect("/urls");
   } else {
     return res.redirect("/login");
@@ -36,7 +42,7 @@ app.get("/", (req, res) => {
 ////////////// URLS //////////////
 
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id;
+  const userID = req.session["user_id"];
   const user = userDb[userID];
   if (!user) {
     return res.status(401).send("<h1>Oops!</h1> <p>You must <a href='/login'>login</a> to access the page.<p>");
@@ -47,11 +53,11 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  if (userDb[req.session.user_id]) {
+  if (userDb[req.session["user_id"]]) {
     const randomShort = generateRandomString();
     urlDatabase[randomShort] = {
       longURL: req.body.longURL,
-      userID: req.session.user_id
+      userID: req.session["user_id"]
     };
     return res.redirect(`/urls/${randomShort}`);
   }
@@ -62,7 +68,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: userDb[req.session.user_id]
+    user: userDb[req.session["user_id"]]
   };
   if (templateVars.user) {
     return res.render("urls_new", templateVars);
@@ -73,21 +79,21 @@ app.get("/urls/new", (req, res) => {
 
 ///////// URLS/:SHORTURL /////////
 
+//server generates a shortURL adds it to urlDatabase
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = req.body.longURL;
-  if (urlDatabase[shortURL]) {
-    urlDatabase[shortURL].longURL = longURL;
-    return res.redirect(`/urls/${shortURL}`);
+  if (urlDatabase[req.params.shortURL].userID === req.session["user_id"]) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    return res.redirect(`/urls`);
+  } else {
+    return res.status(401).send("<h1>Oops!</h1> <p>You must <a href='/login'>login</a> to access the page.<p>");
   }
 });
 
-//server generates a shortURL adds it to urlDatabase
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     let templateVars =
     {
-      user: userDb[req.session.user_id],
+      user: userDb[req.session["user_id"]],
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL
     };
@@ -98,10 +104,12 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //delete button function
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
+  if (urlDatabase[req.params.shortURL].userID === req.session["user_id"]) {
     delete urlDatabase[req.params.shortURL];
+    return res.redirect("/urls");
+  } else {
+    return res.status(401).send("<h1>Oops!</h1> <p>You must <a href='/login'>login</a> to access the page.<p>");
   }
-  return res.redirect("/urls");
 });
 
 
@@ -136,7 +144,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send('<h1>Error!</h1> <p>You need to enter values for email and password.</p>');
   }
   const userID = addNewUser(email, password, userDb);
-  req.session.user_id = userID;
+  req.session["user_id"] = userID;
   return res.redirect("/urls");
 });
 
@@ -145,7 +153,7 @@ app.post("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   let templateVars = {
-    user: userDb[req.session.user_id]
+    user: userDb[req.session["user_id"]]
   };
   return res.render("urls_login", templateVars);
 });
@@ -159,7 +167,7 @@ app.post("/login", (req, res) => {
   } else if ((!bcrypt.compareSync(password, user.password))) {
     res.status(401).send('<h1>Error!</h1> <p>Password is incorrect.</p>');
   } else {
-    req.session.user_id = user.id;
+    req.session["user_id"] = user.id;
     return res.redirect("/urls");
   }
 });
@@ -170,4 +178,10 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   return res.redirect("/urls");
+});
+
+///////////// PORT /////////////
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
